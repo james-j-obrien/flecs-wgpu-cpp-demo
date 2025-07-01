@@ -270,7 +270,7 @@ module::module(flecs::world &world) {
 #if defined(WEBGPU_BACKEND_DAWN)
             webgpu.device.tick();
 #elif defined(WEBGPU_BACKEND_WGPU)
-            webgpu.device.poll(false);
+            webgpu.device.poll(0, nullptr);
 #endif
         });
 }
