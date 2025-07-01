@@ -1,0 +1,8 @@
+.vscode/
+.vs/
+build/
+build-web/
+build-wgpu/
+build-dawn/
+_deps/
+out/
