@@ -63,10 +63,5 @@ module::module(flecs::world &world) {
             response = "";
         }
     });
-
-    // world.entity()
-    //     .set<Rectangle>({745.0f, 1040.0f, 40.0f})
-    //     .set<Position>({0.0f, 0.0f})
-    //     .add<rendering::RenderTexture>(texture);
 }
 } // namespace images_example
