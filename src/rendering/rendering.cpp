@@ -10,6 +10,7 @@ using namespace wgpu;
 
 namespace rendering {
 
+#ifndef EMSCRIPTEN
 WGPUStringView toWgpuStringView(std::string_view stdStringView) {
     return {stdStringView.data(), stdStringView.size()};
 }
@@ -31,6 +32,18 @@ void device_error(const WGPUDevice *, WGPUErrorType type, WGPUStringView message
     }
     std::cout << std::endl;
 }
+
+#else
+const char *toWgpuStringView(std::string_view stdStringView) { return stdStringView.data(); }
+
+void device_lost(WGPUDeviceLostReason reason, char const *message, void * /* pUserData */) {
+    std::cout << "Device lost: reason " << reason;
+    if (message) {
+        std::cout << " (" << message << ")";
+    }
+    std::cout << std::endl;
+}
+#endif
 
 static WGPU init_webgpu(Window &window) {
     // Initialize WebGPU
@@ -55,6 +68,14 @@ static WGPU init_webgpu(Window &window) {
     adapter_options.compatibleSurface = surface;
     Adapter adapter = instance.requestAdapter(adapter_options);
 
+    DeviceDescriptor device_desc = {};
+    device_desc.label = toWgpuStringView("Primary WGPU Device");
+    device_desc.requiredFeatureCount = 0;
+    device_desc.requiredLimits = nullptr;
+    device_desc.defaultQueue.label = toWgpuStringView("Primary WGPU Queue");
+    device_desc.defaultQueue.nextInChain = nullptr;
+
+#ifndef EMSCRIPTEN
     DeviceLostCallbackInfo device_lost_callback = {};
     device_lost_callback.callback = &device_lost;
     device_lost_callback.mode = WGPUCallbackMode::WGPUCallbackMode_AllowSpontaneous;
@@ -62,14 +83,11 @@ static WGPU init_webgpu(Window &window) {
     UncapturedErrorCallbackInfo error_callback = {};
     error_callback.callback = &device_error;
 
-    DeviceDescriptor device_desc = {};
-    device_desc.label = toWgpuStringView("Primary WGPU Device");
-    device_desc.requiredFeatureCount = 0;
-    device_desc.requiredLimits = nullptr;
-    device_desc.defaultQueue.label = toWgpuStringView("Primary WGPU Queue");
-    device_desc.defaultQueue.nextInChain = nullptr;
     device_desc.deviceLostCallbackInfo = device_lost_callback;
     device_desc.uncapturedErrorCallbackInfo = error_callback;
+#else
+    device_desc.deviceLostCallback = device_lost;
+#endif
     Device device = adapter.requestDevice(device_desc);
     Queue queue = device.getQueue();
 
@@ -150,8 +168,10 @@ module::module(flecs::world &world) {
     auto &webgpu = world.ensure<WGPU>();
 
     auto layout = init_uniform_bind_group_layout(webgpu);
-    world.component<Uniforms>()
-        .set<Buffer>({BufferUsage::Uniform | BufferUsage::CopyDst})
+    world
+        .component<Uniforms>()
+        // Cast required for emscripten
+        .set<Buffer>({(wgpu::BufferUsage::W)(BufferUsage::Uniform | BufferUsage::CopyDst)})
         .set<BindingLayout>({layout})
         .set<Binding>({});
     world.set<Uniforms>({{(float)window.width, (float)window.height}});
@@ -188,9 +208,15 @@ module::module(flecs::world &world) {
             SurfaceTexture surface_texture;
             window.surface.getCurrentTexture(&surface_texture);
 
+#ifndef EMSCRIPTEN
             if (surface_texture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal) {
                 return;
             }
+#else
+            if (surface_texture.status != WGPUSurfaceGetCurrentTextureStatus_Success) {
+                return;
+            }
+#endif
 
             flecs::world world{e.world()};
 
@@ -241,9 +267,10 @@ module::module(flecs::world &world) {
 #endif
             command.release();
 
-#ifdef WEBGPU_BACKEND_DAWN
-            // Check for pending error callbacks
+#if defined(WEBGPU_BACKEND_DAWN)
             webgpu.device.tick();
+#elif defined(WEBGPU_BACKEND_WGPU)
+            webgpu.device.poll(false);
 #endif
         });
 }

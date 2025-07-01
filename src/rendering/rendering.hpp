@@ -4,7 +4,7 @@
 #include <array>
 #include <filesystem>
 #include <optional>
-#include <webgpu/webgpu.hpp>
+#include "webgpu/webgpu.hpp"
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 
@@ -257,7 +257,11 @@ struct TextureArrayCache {
     std::unordered_map<TextureArrayKey, flecs::entity_t, TextureArrayKey::Hash> map;
 };
 
+#ifndef EMSCRIPTEN
 WGPUStringView toWgpuStringView(std::string_view stdStringView);
+#else
+const char *toWgpuStringView(std::string_view stdStringView);
+#endif
 
 struct module {
     module(flecs::world &world);

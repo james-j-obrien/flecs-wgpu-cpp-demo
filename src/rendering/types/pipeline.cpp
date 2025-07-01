@@ -106,10 +106,17 @@ wgpu::ShaderModule load_shader(WGPU &webgpu, const std::filesystem::path &path) 
     file.seekg(0);
     file.read(src.data(), size);
 
+#ifndef EMSCRIPTEN
     wgpu::ShaderSourceWGSL shader_code_desc{};
     shader_code_desc.chain.next = nullptr;
     shader_code_desc.chain.sType = wgpu::SType::ShaderSourceWGSL;
     shader_code_desc.code = toWgpuStringView(src);
+#else
+    wgpu::ShaderModuleWGSLDescriptor shader_code_desc{};
+    shader_code_desc.chain.next = nullptr;
+    shader_code_desc.chain.sType = wgpu::SType::ShaderModuleWGSLDescriptor;
+    shader_code_desc.code = toWgpuStringView(src);
+#endif
 
     wgpu::ShaderModuleDescriptor shader_desc;
     shader_desc.nextInChain = &shader_code_desc.chain;

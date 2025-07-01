@@ -11,10 +11,11 @@ add_executable(app ${SRC})
 option(FLECS_SHARED "Build shared flecs lib" ON)
 set(FLECS_SHARED OFF)
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+set(BUILD_SHARED_LIBS OFF)
+
 option(BOX2D_BUILD_TESTBED "Build the Box2D testbed" ON)
 set(BOX2D_BUILD_TESTBED OFF)
-
-# set(CPR_USE_SYSTEM_CURL ON)
 
 if (NOT EMSCRIPTEN)
     # Do not include this with emscripten, it provides its own version.
@@ -23,21 +24,18 @@ else()
     add_library(glfw INTERFACE)
     target_link_options(glfw INTERFACE -sUSE_GLFW=3)
 
-    add_library(webgpu INTERFACE)
-    target_link_options(webgpu INTERFACE -sUSE_WEBGPU=1)
-    function(target_copy_webgpu_binaries)
-    endfunction()
+    # add_library(webgpu INTERFACE)
+    # target_link_options(webgpu INTERFACE -sUSE_WEBGPU=1)
+    # function(target_copy_webgpu_binaries)
+    # endfunction()
 endif()
 
 add_subdirectory(libs/webgpu)
 add_subdirectory(libs/glfw3webgpu)
-add_subdirectory(libs/cpr)
 add_subdirectory(libs/flecs)
-add_subdirectory(libs/glm)
 add_subdirectory(libs/box2d)
-add_subdirectory(libs/json)
 
-target_link_libraries(app PRIVATE glfw webgpu glfw3webgpu flecs_static box2d cpr::cpr glm nlohmann_json)
+target_link_libraries(app PRIVATE glfw webgpu glfw3webgpu flecs_static box2d)
 
 target_copy_webgpu_binaries(app)
 
@@ -48,7 +46,7 @@ set_target_properties(app PROPERTIES
 )
 
 if (MSVC)
-    # Disable macro redifinition warning for glfw
+    # Disable macro redefinition warning for glfw
     target_compile_options(app PRIVATE /W4 /wd4127 /wd4005)
 else()
     target_compile_options(app PRIVATE -Wall -Wextra -pedantic)

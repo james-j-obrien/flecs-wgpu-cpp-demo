@@ -1,15 +1,13 @@
-// #include "examples/images/example.hpp"
 #include "examples/physics/example.hpp"
 #include "flecs.h"
 #include <iostream>
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten/html5.h>
-#endif
+#include <emscripten.h>
+#endif // __EMSCRIPTEN__
 
 int main(void) {
     flecs::world world{ecs_init()};
-    // world.import <images_example::module>();
     world.import <physics_example::module>();
 
 #ifdef __EMSCRIPTEN__

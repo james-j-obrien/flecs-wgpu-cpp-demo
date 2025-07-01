@@ -2,7 +2,6 @@
 
 #include "../rendering.hpp"
 #include "flecs.h"
-#include <glm/glm.hpp>
 
 namespace quad_pipeline {
 

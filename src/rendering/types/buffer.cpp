@@ -17,7 +17,9 @@ wgpu::Buffer init_buffer(WGPU &webgpu, wgpu::BufferUsage usage) {
 
 module::module(flecs::world &world) {
     world.component<VertexBuffer>().on_add([](flecs::entity e, VertexBuffer &) {
-        e.set<Buffer>({wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex, 18, sizeof(float)});
+        e.set<Buffer>(
+            {(wgpu::BufferUsage::W)(wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst), 18,
+             sizeof(float)});
     });
 
     world.observer<WGPU, Buffer>()

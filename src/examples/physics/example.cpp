@@ -20,7 +20,7 @@ module::module(flecs::world &world) {
     world.entity()
         .set<Quad>({200.0f, 10.0f})
         .set<Color>({0.0f, 0.0f, 0.0f, 1.0f})
-        .set<Position>({0.0f, -200.0f})
+        .set<Position>({0.0f, -200.0f, 0.0f})
         .add<StaticBody>();
 
     for (auto x = -x_amount; x <= x_amount; x++) {
@@ -31,7 +31,7 @@ module::module(flecs::world &world) {
                     8.0f,
                 })
                 .set<Color>({0.5f, get_color(x, x_amount), get_color(y, y_amount), 1.0f})
-                .set<Position>({x * 16.0f, y * 16.0f})
+                .set<Position>({x * 16.0f, y * 16.0f, 0.0f})
                 .set<DynamicBody>({1.0f, 0.3f});
         }
     }
@@ -46,7 +46,7 @@ module::module(flecs::world &world) {
             auto circle = world.entity()
                               .set<Circle>({10.0f})
                               .set<Color>({0.8f, 0.3f, 0.3f, 1.0f})
-                              .set<Position>({event.x, event.y});
+                              .set<Position>({event.x, event.y, 0.0f});
 
             world.add<Holding>(circle);
         })

@@ -49,7 +49,6 @@ endif()
 
 # A couple of utility functions
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/utils.cmake")
-
 # Convert to uppercase, so that users can provide value with any case they like
 string(TOUPPER ${WEBGPU_BACKEND} WEBGPU_BACKEND_U)
 

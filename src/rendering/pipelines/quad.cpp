@@ -3,7 +3,6 @@
 #include "pipelines.hpp"
 #include <array>
 #include <iostream>
-#include <webgpu/webgpu.hpp>
 
 using namespace rendering;
 
@@ -68,7 +67,9 @@ module::module(flecs::world &world) {
 
     world.singleton<QuadInstanceBuffer>()
         .add<QuadInstanceBuffer>()
-        .set<Buffer>({wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst})
+        // Cast required for emscripten
+        .set<Buffer>(
+            {(wgpu::BufferUsage::W)(wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst)})
         .set<BindingLayout>({instance_layout})
         .add<Binding>()
         .set<InstanceBuffer>({});
@@ -81,22 +82,23 @@ module::module(flecs::world &world) {
         .src<QuadInstanceBuffer>()
         .kind<RenderSystems::Initialize>()
         .each([](InstanceBuffer &buffer, Quad &quad, Position &pos, Color &color) {
-            BufferData data{
-                color.color[0],
-                color.color[1],
-                color.color[2],
-                color.color[3],
-                quad.corner_radius,
-                quad.corner_radius,
-                quad.corner_radius,
-                quad.corner_radius,
-                pos.x,
-                pos.y,
-                pos.rotation,
-                0.0f,
-                quad.width,
-                quad.height,
-            };
+            BufferData data{{
+                                color.color[0],
+                                color.color[1],
+                                color.color[2],
+                                color.color[3],
+                                quad.corner_radius,
+                                quad.corner_radius,
+                                quad.corner_radius,
+                                quad.corner_radius,
+                                pos.x,
+                                pos.y,
+                                pos.rotation,
+                                0.0f,
+                                quad.width,
+                                quad.height,
+                            },
+                            {0.0f, 0.0f}};
             buffer.data.push_back(data);
         });
 
@@ -105,22 +107,23 @@ module::module(flecs::world &world) {
         .src<QuadInstanceBuffer>()
         .kind<RenderSystems::Initialize>()
         .each([](InstanceBuffer &buffer, Circle &circle, Position &pos, Color &color) {
-            BufferData data{
-                color.color[0],
-                color.color[1],
-                color.color[2],
-                color.color[3],
-                circle.radius,
-                circle.radius,
-                circle.radius,
-                circle.radius,
-                pos.x,
-                pos.y,
-                pos.rotation,
-                0.0f,
-                circle.radius * 2.0f,
-                circle.radius * 2.0f,
-            };
+            BufferData data{{
+                                color.color[0],
+                                color.color[1],
+                                color.color[2],
+                                color.color[3],
+                                circle.radius,
+                                circle.radius,
+                                circle.radius,
+                                circle.radius,
+                                pos.x,
+                                pos.y,
+                                pos.rotation,
+                                0.0f,
+                                circle.radius * 2.0f,
+                                circle.radius * 2.0f,
+                            },
+                            {0.0f, 0.0f}};
             buffer.data.push_back(data);
         });
 
